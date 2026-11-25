@@ -2,6 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CwManageClient } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
+import { fieldsSchema } from "./fields.js";
 
 export function registerOpportunityTools(server: McpServer, client: CwManageClient) {
   server.tool(
@@ -10,14 +11,16 @@ export function registerOpportunityTools(server: McpServer, client: CwManageClie
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'id desc')"),
     },
-    async ({ conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const result = await client.get("/sales/opportunities", {
         conditions,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,
@@ -43,11 +46,13 @@ export function registerOpportunityTools(server: McpServer, client: CwManageClie
     "Search opportunity forecasts/revenue items for a specific opportunity.",
     {
       opportunityId: z.number().describe("Opportunity ID"),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
     },
-    async ({ opportunityId, page, pageSize }) => {
+    async ({ fields, opportunityId, page, pageSize }) => {
       const result = await client.get(`/sales/opportunities/${opportunityId}/forecast`, {
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
       });
@@ -60,11 +65,13 @@ export function registerOpportunityTools(server: McpServer, client: CwManageClie
     "Get notes on a specific sales opportunity.",
     {
       opportunityId: z.number().describe("Opportunity ID"),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
     },
-    async ({ opportunityId, page, pageSize }) => {
+    async ({ fields, opportunityId, page, pageSize }) => {
       const result = await client.get(`/sales/opportunities/${opportunityId}/notes`, {
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
       });
@@ -77,12 +84,14 @@ export function registerOpportunityTools(server: McpServer, client: CwManageClie
     "List sales pipeline stages in ConnectWise Manage.",
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string"),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
     },
-    async ({ conditions, page, pageSize }) => {
+    async ({ fields, conditions, page, pageSize }) => {
       const result = await client.get("/sales/stages", {
         conditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
       });
