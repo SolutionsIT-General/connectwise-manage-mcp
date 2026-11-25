@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CwManageClient } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
 import { registerInvoiceUpdateTool } from "./invoices.js";
+import { fieldsSchema } from "./fields.js";
 
 // RFC 6902 requires a "value" member on add/replace but forbids relying on it
 // for remove. A flat z.object with an optional value let a caller omit it on
@@ -71,14 +72,16 @@ export function registerAgreementTools(server: McpServer, client: CwManageClient
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by"),
     },
-    async ({ conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const result = await client.get("/finance/agreements", {
         conditions,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,
@@ -131,13 +134,15 @@ export function registerAgreementTools(server: McpServer, client: CwManageClient
     "Search agreement recaps — the billing rollup ConnectWise computes per agreement: starting, used, remaining, available and overrun amounts, unbilled periods, and the last and next invoice amount and date. Use this to answer agreement burn-down and overage questions without adding up additions by hand.",
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string (e.g. \"companyName like '%Acme%'\")"),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'remainingAmount asc')"),
     },
-    async ({ conditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, page, pageSize, orderBy }) => {
       const result = await client.get("/finance/agreementrecap/", {
         conditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,
@@ -245,14 +250,16 @@ export function registerAgreementTools(server: McpServer, client: CwManageClient
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string (e.g. \"company/name = 'Acme'\")"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'id desc')"),
     },
-    async ({ conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const result = await client.get("/finance/invoices", {
         conditions,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,

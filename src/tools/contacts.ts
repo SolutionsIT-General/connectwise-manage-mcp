@@ -4,6 +4,7 @@ import { CwManageClient } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
 import { resolveCommunicationTypes } from "./communication-types.js";
 import { buildContactSearchQuery } from "./contact-search.js";
+import { fieldsSchema } from "./fields.js";
 import {
   asContactList,
   assertContactPatchOperations,
@@ -70,16 +71,18 @@ export function registerContactTools(server: McpServer, client: CwManageClient) 
         .number()
         .optional()
         .describe("Contact type id. Sent as childConditions types/id=<id>."),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by"),
     },
-    async ({ conditions, customFieldConditions, childConditions, typeName, typeId, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, childConditions, typeName, typeId, page, pageSize, orderBy }) => {
       const query = buildContactSearchQuery({ conditions, childConditions, typeName, typeId });
       const result = await client.get("/company/contacts", {
         conditions: query.conditions,
         customFieldConditions,
         childConditions: query.childConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CwManageClient } from "../api-client.js";
+import { fieldsSchema } from "./fields.js";
 
 /**
  * Schedule entries book a member's time against a ticket, activity or project.
@@ -71,6 +72,7 @@ export function registerScheduleTools(server: McpServer, client: CwManageClient)
         .describe(
           "ConnectWise conditions query string (e.g. \"member/id = 147 and dateStart >= [2026-09-22T00:00:00Z]\"). Date literals go in square brackets and are UTC.",
         ),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z
         .number()
@@ -82,9 +84,10 @@ export function registerScheduleTools(server: McpServer, client: CwManageClient)
         .describe("Field to order by (e.g. 'dateStart asc')"),
     },
     SCHEDULE_READ_ONLY,
-    async ({ conditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, page, pageSize, orderBy }) => {
       const result = await client.get("/schedule/entries", {
         conditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,

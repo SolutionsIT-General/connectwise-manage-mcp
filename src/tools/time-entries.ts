@@ -2,6 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CwManageClient } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
+import { fieldsSchema } from "./fields.js";
 
 export interface CreateTimeEntryInput {
   chargeToType: "ServiceTicket" | "ProjectTicket" | "ChargeCode" | "Activity";
@@ -488,14 +489,16 @@ export function registerTimeEntryTools(server: McpServer, client: CwManageClient
     {
       conditions: z.string().optional().describe("ConnectWise conditions query string (e.g. \"member/identifier = 'jsmith'\")"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by"),
     },
-    async ({ conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const result = await client.get("/time/entries", {
         conditions,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,

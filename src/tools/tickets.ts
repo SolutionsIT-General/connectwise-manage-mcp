@@ -4,6 +4,7 @@ import { CwManageClient, hasApiStatus } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
 import { buildTicketCard, TICKET_CARD_META } from "../card.builder.js";
 import { buildTicketNoteBody, mapCreatedNoteResponse } from "./note-payload.js";
+import { fieldsSchema } from "./fields.js";
 
 export function registerTicketTools(server: McpServer, client: CwManageClient) {
   server.tool(
@@ -74,6 +75,7 @@ export function registerTicketTools(server: McpServer, client: CwManageClient) {
         .optional()
         .describe("ConnectWise conditions query string"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z
         .number()
@@ -84,10 +86,11 @@ export function registerTicketTools(server: McpServer, client: CwManageClient) {
         .optional()
         .describe("Field to order by (e.g. 'id desc')"),
     },
-    async ({ conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const result = await client.get("/service/tickets", {
         conditions,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,

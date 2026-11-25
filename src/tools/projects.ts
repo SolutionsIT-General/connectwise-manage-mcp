@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CwManageClient, hasApiStatus } from "../api-client.js";
 import { customFieldConditionsSchema } from "./custom-field-conditions.js";
 import { buildTicketNoteBody, mapCreatedNoteResponse } from "./note-payload.js";
+import { fieldsSchema } from "./fields.js";
 
 export function registerProjectTools(server: McpServer, client: CwManageClient) {
   server.tool(
@@ -15,11 +16,7 @@ export function registerProjectTools(server: McpServer, client: CwManageClient) 
         .boolean()
         .optional()
         .describe("Only open projects, closedFlag = false (default: true). Set false to include closed projects"),
-      fields: z
-        .string()
-        .max(1000)
-        .optional()
-        .describe("Comma-separated field list to return (e.g. \"id,name,status/name,company/name\")"),
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by"),
@@ -59,11 +56,12 @@ export function registerProjectTools(server: McpServer, client: CwManageClient) 
       projectId: z.number().optional().describe("Filter by project ID"),
       conditions: z.string().optional().describe("ConnectWise conditions query string"),
       customFieldConditions: customFieldConditionsSchema,
+      fields: fieldsSchema,
       page: z.number().optional().describe("Page number (default: 1)"),
       pageSize: z.number().optional().describe("Results per page (default: 25, max: 1000)"),
       orderBy: z.string().optional().describe("Field to order by (e.g. 'id desc')"),
     },
-    async ({ projectId, conditions, customFieldConditions, page, pageSize, orderBy }) => {
+    async ({ fields, projectId, conditions, customFieldConditions, page, pageSize, orderBy }) => {
       const conditionParts: string[] = [];
       if (projectId !== undefined) conditionParts.push(`project/id=${projectId}`);
       if (conditions) conditionParts.push(conditions);
@@ -71,6 +69,7 @@ export function registerProjectTools(server: McpServer, client: CwManageClient) 
       const result = await client.get("/project/tickets", {
         conditions: conditionParts.join(" and ") || undefined,
         customFieldConditions,
+        fields,
         page: page ?? 1,
         pageSize: pageSize ?? 25,
         orderBy,
